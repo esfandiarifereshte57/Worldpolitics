@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>سیاست جهانی - بازی استراتژیک</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Tahoma', 'Arial', sans-serif;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        
+        .game-panel {
+            background: linear-gradient(135deg, #1e3a8a, #3730a3);
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            margin-bottom: 16px;
+        }
+        
+        .resource-card {
+            background: linear-gradient(135deg, #059669, #047857);
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            touch-action: manipulation;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .resource-card:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+            font-size: 14px;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        
+        .action-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            background: #10b981;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateY(-100px);
+            transition: transform 0.3s ease;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+        }
+        
+        .notification.error {
+            background: #ef4444;
+        }
+        
+        .war-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        
+        .war-modal.active {
+            display: flex;
+        }
+        
+        .mobile-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, #1e3a8a, #3730a3);
+            padding: 12px 16px;
+            color: white;
+        }
+        
+        .mobile-tabs {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1f2937;
+            display: flex;
+            z-index: 200;
+            border-top: 1px solid #374151;
+        }
+        
+        .mobile-tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            touch-action: manipulation;
+        }
+        
+        .mobile-tab.active {
+            color: #3b82f6;
+            background: #374151;
+        }
+        
+        .mobile-tab:active {
+            background: #4b5563;
+        }
+        
+        .mobile-content {
+            padding-bottom: 80px;
+        }
+        
+        .country-selection-card {
+            background: linear-gradient(135deg, #1e3a8a, #3730a3);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+        
+        .country-selection-card:active {
+            transform: scale(0.98);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .avatar-option {
+            width: 50px;
+            height: 50px;
+            background: #374151;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .avatar-option:hover {
+            background: #4b5563;
+        }
+        
+        .avatar-option.selected {
+            border-color: #3b82f6;
+            background: #1e40af;
+        }
+        
+        .country-search {
+            background: #374151;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        
+        .country-search::placeholder {
+            color: #9ca3af;
+        }
+        
+        .flowing-bg {
+            background: linear-gradient(45deg, 
+                rgba(59, 130, 246, 0.3) 0%, 
+                rgba(147, 51, 234, 0.3) 25%, 
+                rgba(59, 130, 246, 0.3) 50%, 
+                rgba(147, 51, 234, 0.3) 75%, 
+                rgba(59, 130, 246, 0.3) 100%);
+            background-size: 400% 400%;
+            animation: flowingGradient 8s ease-in-out infinite;
+            width: 100%;
+            height: 100%;
+        }
+        
+        @keyframes flowingGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-white">
+    <!-- Main Homepage -->
+    <div id="main-homepage" class="min-h-screen">
+        <!-- Animated Banner -->
+        <div class="relative overflow-hidden bg-gradient-to-r from-blue-900 via-purple-900 to-blue-900 h-32">
+            <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+            <div class="relative z-10 h-full flex items-center justify-center">
+                <div class="text-center">
+                    <img src="https://s6.uupload.ir/files/img_3208_gyk0.jpeg" alt="لوگوی سیاست جهانی" class="w-16 h-16 mx-auto mb-2 rounded-lg border border-white/50 shadow-md object-cover" onerror="this.style.display='none'; document.getElementById('fallback-title').style.display='block';">
+                    <h1 id="fallback-title" class="text-3xl font-bold text-white mb-2 animate-pulse" style="display: none;">🌍 سیاست جهانی 🌍</h1>
+                    <h1 class="text-xl font-bold text-white mb-1">سیاست جهانی</h1>
+                    <p class="text-blue-200 text-sm">بازی استراتژیک رهبری کشورها</p>
+                </div>
+            </div>
+            <!-- Flowing Animation -->
+            <div class="absolute top-0 left-0 w-full h-full">
+                <div class="flowing-bg"></div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="px-4 py-8">
+            <!-- Game Features -->
+            <div class="space-y-6 mb-8">
+                <div class="game-panel text-center">
+                    <div class="text-4xl mb-4">🎮</div>
+                    <h2 class="text-xl font-bold mb-3">بازی استراتژیک سیاست جهانی</h2>
+                    <p class="text-blue-200 text-sm leading-relaxed">
+                        رهبر کشور خود شوید! اقتصاد بسازید، ارتش تقویت کنید، تکنولوژی توسعه دهید و در صحنه جهانی قدرت کسب کنید!
+                    </p>
+                </div>
+
+                <!-- Features Grid -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="game-panel text-center">
+                        <div class="text-2xl mb-2">💰</div>
+                        <h3 class="font-bold text-sm mb-1">اقتصاد قدرتمند</h3>
+                        <p class="text-xs text-blue-200">معادن و کارخانه بسازید</p>
+                    </div>
+                    <div class="game-panel text-center">
+                        <div class="text-2xl mb-2">⚔️</div>
+                        <h3 class="font-bold text-sm mb-1">ارتش نیرومند</h3>
+                        <p class="text-xs text-blue-200">سرباز و تانک استخدام کنید</p>
+                    </div>
+                    <div class="game-panel text-center">
+                        <div class="text-2xl mb-2">💻</div>
+                        <h3 class="font-bold text-sm mb-1">تکنولوژی پیشرفته</h3>
+                        <p class="text-xs text-blue-200">در علم و فناوری سرمایه‌گذاری کنید</p>
+                    </div>
+                    <div class="game-panel text-center">
+                        <div class="text-2xl mb-2">🚀</div>
+                        <h3 class="font-bold text-sm mb-1">موشک و هسته‌ای</h3>
+                        <p class="text-xs text-blue-200">قدرت نظامی نهایی کسب کنید</p>
+                    </div>
+                </div>
+
+                <!-- Game Stats -->
+                <div class="game-panel">
+                    <h3 class="font-bold mb-3 text-center">📊 آمار بازی</h3>
+                    <div class="grid grid-cols-2 gap-4 text-center text-sm">
+                        <div>
+                            <div class="text-yellow-400 font-bold text-lg">100+</div>
+                            <div class="text-blue-200">کشور واقعی</div>
+                        </div>
+                        <div>
+                            <div class="text-green-400 font-bold text-lg">∞</div>
+                            <div class="text-blue-200">امکانات بازی</div>
+                        </div>
+                        <div>
+                            <div class="text-purple-400 font-bold text-lg">24/7</div>
+                            <div class="text-blue-200">آنلاین</div>
+                        </div>
+                        <div>
+                            <div class="text-red-400 font-bold text-lg">رایگان</div>
+                            <div class="text-blue-200">کاملاً مجانی</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rubika Channel Promotion -->
+                <div class="game-panel text-center border-2 border-yellow-500">
+                    <div class="text-3xl mb-3">📱</div>
+                    <h3 class="font-bold text-yellow-300 mb-2">کانال رسمی روبیکا</h3>
+                    <p class="text-sm text-blue-200 mb-4">
+                        آپدیت‌ها، راهنمایی‌ها و اخبار بازی را از کانال رسمی ما دنبال کنید
+                    </p>
+                    <a href="https://rubika.ir/worldpolitics" target="_blank" rel="noopener noreferrer" 
+                       class="inline-block bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
+                        🔗 عضویت در کانال روبیکا
+                    </a>
+                </div>
+            </div>
+
+            <!-- Daily World News -->
+            <div class="game-panel mb-6" id="daily-news-section" style="display: none;">
+                <h3 class="font-bold mb-4 text-center text-yellow-300">📰 اخبار روز دنیا</h3>
+                <div class="space-y-3 max-h-64 overflow-y-auto" id="daily-news-container">
+                    <!-- News will be populated here -->
+                </div>
+                <div class="text-center mt-4">
+                    <button id="continue-to-game-btn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-200">
+                        ادامه به بازی ←
+                    </button>
+                </div>
+            </div>
+
+            <!-- Start Game Button -->
+            <div class="text-center" id="start-game-section">
+                <button id="start-game-btn" class="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transform hover:scale-105 transition-all duration-200">
+                    🎮 شروع بازی
+                </button>
+                <p class="text-gray-400 text-xs mt-2">رایگان و بدون نیاز به ثبت‌نام</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Header (Hidden initially) -->
+    <div class="mobile-header" style="display: none;">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <img src="https://s6.uupload.ir/files/img_3208_gyk0.jpeg" alt="لوگو" class="w-8 h-8 rounded border border-white/50 object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="text-xl" style="display: none;">🌍</div>
+                <div>
+                    <h1 class="text-lg font-bold">سیاست جهانی</h1>
+                    <p class="text-xs text-blue-200">بازی استراتژیک</p>
+                    <a href="https://rubika.ir/worldpolitics" target="_blank" rel="noopener noreferrer" class="text-xs text-yellow-300 underline hover:text-yellow-200">
+                        📱 کانال روبیکا
+                    </a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 space-x-reverse">
+                <button class="text-xs bg-blue-600 px-3 py-1 rounded" id="user-panel-btn" style="display: none;">
+                    👤 پنل کاربری
+                </button>
+                <button class="text-xs bg-red-600 px-3 py-1 rounded" id="admin-panel-btn">
+                    🔑 پنل مدیریت
+                </button>
+                <div class="flex items-center space-x-2 space-x-reverse mr-2" id="user-profile" style="display: none;">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm" id="header-avatar">👤</div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold" id="header-username">کاربر</div>
+                        <div class="text-xs text-blue-200">سطح <span id="user-level">1</span></div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-lg font-bold" id="game-time">روز ۱</div>
+                    <div class="text-xs text-blue-200">زمان بازی</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Setup -->
+    <div id="profile-setup" class="px-4 py-6">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold mb-3">🎮 ایجاد پروفایل</h2>
+            <p class="text-gray-400 text-sm">ابتدا پروفایل خود را بسازید</p>
+            <a href="https://rubika.ir/worldpolitics" target="_blank" rel="noopener noreferrer" class="inline-block mt-2 text-xs text-yellow-300 underline hover:text-yellow-200">
+                📱 عضویت در کانال روبیکا
+            </a>
+        </div>
+        
+        <div class="game-panel max-w-md mx-auto">
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 mx-auto mb-4 bg-blue-600 rounded-full flex items-center justify-center text-3xl cursor-pointer" id="avatar-display">
+                    👤
+                </div>
+                <button class="text-sm text-blue-400 underline" id="change-avatar-btn">تغییر آواتار</button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold mb-2">نام کاربری:</label>
+                    <input type="text" id="username-input" class="w-full p-3 bg-gray-700 rounded-lg text-white" placeholder="نام خود را وارد کنید" maxlength="20">
+                </div>
+                
+                <button class="action-btn" id="create-profile-btn">
+                    ✨ ایجاد پروفایل
+                </button>
+                
+                <div class="text-center">
+                    <button class="text-sm text-gray-400 underline" id="load-profile-btn">
+                        بازیابی پروفایل قبلی
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avatar Selector Modal -->
+    <div id="avatar-selector" class="war-modal">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-sm mx-4">
+            <h3 class="text-lg font-bold mb-4 text-center">انتخاب آواتار</h3>
+            
+            <div class="grid grid-cols-4 gap-3 mb-4" id="avatar-options">
+                <!-- Avatar options will be populated -->
+            </div>
+            
+            <div class="flex space-x-2 space-x-reverse">
+                <button class="action-btn flex-1 text-sm py-3" id="select-avatar-btn">انتخاب</button>
+                <button class="bg-gray-600 text-white px-4 py-3 rounded flex-1 text-sm" id="cancel-avatar-btn">انصراف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Country Selection -->
+    <div id="country-selection" class="px-4 py-6 hidden">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold mb-3">کشور خود را انتخاب کنید</h2>
+            <p class="text-gray-400 text-sm">هر کشور ویژگی‌ها و منابع متفاوتی دارد</p>
+            <a href="https://rubika.ir/worldpolitics" target="_blank" rel="noopener noreferrer" class="inline-block mt-2 text-xs text-yellow-300 underline hover:text-yellow-200">
+                📱 کانال روبیکا - آپدیت‌ها و راهنمایی
+            </a>
+        </div>
+        
+        <input type="text" id="country-search" class="country-search" placeholder="🔍 جستجوی کشور...">
+        
+        <div class="space-y-3 max-h-96 overflow-y-auto" id="countries-list">
+            <!-- Countries will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Main Game Interface -->
+    <div id="game-interface" class="hidden mobile-content">
+        <!-- Country Status -->
+        <div class="px-4 py-4">
+            <div class="game-panel">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <div id="country-flag" class="text-3xl"></div>
+                        <div>
+                            <h2 class="text-lg font-bold" id="country-name"></h2>
+                            <p class="text-blue-200 text-xs" id="president-name">رئیس‌جمهور</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold" id="power-rank">رتبه: ۳</div>
+                        <div class="text-xs text-blue-200">از ۲۰ کشور</div>
+                    </div>
+                </div>
+                
+                <!-- Resources -->
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <div class="resource-card">
+                        <div class="text-lg mb-1">💰</div>
+                        <div class="font-bold text-sm" id="money">۰</div>
+                        <div class="text-xs">پول</div>
+                    </div>
+                    <div class="resource-card">
+                        <div class="text-lg mb-1">👥</div>
+                        <div class="font-bold text-sm" id="population">۰</div>
+                        <div class="text-xs">جمعیت</div>
+                    </div>
+                    <div class="resource-card">
+                        <div class="text-lg mb-1">⚔️</div>
+                        <div class="font-bold text-sm" id="army">۰</div>
+                        <div class="text-xs">ارتش</div>
+                    </div>
+                    <div class="resource-card">
+                        <div class="text-lg mb-1">💻</div>
+                        <div class="font-bold text-sm" id="technology">۰</div>
+                        <div class="text-xs">تکنولوژی</div>
+                    </div>
+                    <div class="resource-card">
+                        <div class="text-lg mb-1">🏭</div>
+                        <div class="font-bold text-sm" id="daily-income">۰</div>
+                        <div class="text-xs">درآمد روزانه</div>
+                    </div>
+                    <div class="resource-card">
+                        <div class="text-lg mb-1">🚀</div>
+                        <div class="font-bold text-sm" id="missiles">۰</div>
+                        <div class="text-xs">موشک</div>
+                    </div>
+                </div>
+                
+                <!-- Nuclear Resources -->
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <div class="resource-card">
+                        <div class="text-lg mb-1">⚛️</div>
+                        <div class="font-bold text-sm" id="centrifuges">۰</div>
+                        <div class="text-xs">سانتریفیوژ</div>
+                    </div>
+                    <div class="resource-card">
+                        <div class="text-lg mb-1">☢️</div>
+                        <div class="font-bold text-sm" id="nuclear-program">۰%</div>
+                        <div class="text-xs">برنامه هسته‌ای</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="economy-tab" class="tab-content">
+                <div class="game-panel">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <span class="text-xl ml-3">🏦</span>
+                        اقتصاد
+                    </h3>
+                    <div class="space-y-2">
+                        <button class="action-btn" onclick="buildMine()">
+                            ساخت معدن (+۱K درآمد) - ۵K$
+                        </button>
+                        <button class="action-btn" onclick="buildFactory()">
+                            ساخت کارخانه (+۵۰۰ درآمد) - ۳K$
+                        </button>
+                        <button class="action-btn" onclick="investTechnology()">
+                            سرمایه‌گذاری تکنولوژی - ۸K$
+                        </button>
+                        <button class="action-btn" onclick="improveWelfare()">
+                            بهبود رفاه (+جمعیت) - ۶K$
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Attack Section -->
+                <div class="game-panel mt-4">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <span class="text-xl ml-3">🎯</span>
+                        حمله به کشورها
+                    </h3>
+                    
+                    <input type="text" id="attack-search" class="country-search mb-3" placeholder="🔍 جستجوی کشور برای حمله...">
+                    
+                    <div class="space-y-2 max-h-64 overflow-y-auto" id="attack-countries-list">
+                        <!-- Attack targets will be populated -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="military-tab" class="tab-content hidden">
+                <div class="game-panel">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <span class="text-xl ml-3">⚔️</span>
+                        نظامی
+                    </h3>
+                    <div class="space-y-2">
+                        <button class="action-btn" onclick="recruitSoldiers()">
+                            استخدام سرباز (+۱K) - ۴K$
+                        </button>
+                        <button class="action-btn" onclick="buyTanks()">
+                            خرید تانک (+۵۰۰) - ۷K$
+                        </button>
+                        <button class="action-btn" onclick="buyMissiles()">
+                            خرید موشک (+۵) - ۱۰K$
+                        </button>
+                        <button class="action-btn" onclick="buildDefense()">
+                            ساخت پدافند - ۱۵K$
+                        </button>
+                        <button class="action-btn" onclick="buildCentrifuges()">
+                            ساخت سانتریفیوژ (+۱) - ۲۰K$
+                        </button>
+                        <button class="action-btn" onclick="developNuclear()">
+                            توسعه هسته‌ای (+۵%) - ۳۰K$
+                        </button>
+                        <button class="action-btn" onclick="buyAdvancedMissiles()">
+                            موشک‌های پیشرفته (+۱۰) - ۲۵K$
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Attack Section -->
+                <div class="game-panel mt-4">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <span class="text-xl ml-3">🎯</span>
+                        حمله به کشورها
+                    </h3>
+                    
+                    <input type="text" id="attack-search" class="country-search mb-3" placeholder="🔍 جستجوی کشور برای حمله...">
+                    
+                    <div class="space-y-2 max-h-64 overflow-y-auto" id="attack-countries-list">
+                        <!-- Attack targets will be populated -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="diplomacy-tab" class="tab-content hidden">
+                <div class="game-panel">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <span class="text-xl ml-3">🤝</span>
+                        دیپلماسی
+                    </h3>
+                    <div class="space-y-2">
+                        <button class="action-btn" onclick="showNotification('مذاکرات دیپلماتیک در حال توسعه است...')">
+                            مذاکرات دیپلماتیک
+                        </button>
+                        <button class="action-btn" onclick="showNotification('سیستم اتحادها در حال توسعه است...')">
+                            اتحادها و پیمان‌ها
+                        </button>
+                        <button class="action-btn" onclick="showWarOptions()">
+                            اعلان جنگ
+                        </button>
+                        <button class="action-btn" onclick="spyMission()">
+                            ماموریت جاسوسی - ۵K$
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Attack Section -->
+                <div class="game-panel mt-4">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <span class="text-xl ml-3">🎯</span>
+                        حمله به کشورها
+                    </h3>
+                    
+                    <input type="text" id="attack-search" class="country-search mb-3" placeholder="🔍 جستجوی کشور برای حمله...">
+                    
+                    <div class="space-y-2 max-h-64 overflow-y-auto" id="attack-countries-list">
+                        <!-- Attack targets will be populated -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="world-tab" class="tab-content hidden">
+                <div class="game-panel">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <span class="text-xl ml-3">🌍</span>
+                        وضعیت جهان
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-bold mb-2 text-sm">رتبه‌بندی قدرت</h4>
+                            <div class="space-y-1" id="world-ranking">
+                                <!-- Rankings will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attack Section -->
+                <div class="game-panel mt-4">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <span class="text-xl ml-3">🎯</span>
+                        حمله به کشورها
+                    </h3>
+                    
+                    <input type="text" id="attack-search" class="country-search mb-3" placeholder="🔍 جستجوی کشور برای حمله...">
+                    
+                    <div class="space-y-2 max-h-64 overflow-y-auto" id="attack-countries-list">
+                        <!-- Attack targets will be populated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation Tabs -->
+    <div class="mobile-tabs" style="display: none;">
+        <div class="mobile-tab active" onclick="switchTab('economy')">
+            <div class="text-lg mb-1">🏦</div>
+            <div>اقتصاد</div>
+        </div>
+        <div class="mobile-tab" onclick="switchTab('military')">
+            <div class="text-lg mb-1">⚔️</div>
+            <div>نظامی</div>
+        </div>
+        <div class="mobile-tab" onclick="switchTab('diplomacy')">
+            <div class="text-lg mb-1">🤝</div>
+            <div>دیپلماسی</div>
+        </div>
+        <div class="mobile-tab" onclick="switchTab('world')">
+            <div class="text-lg mb-1">🌍</div>
+            <div>جهان</div>
+        </div>
+    </div>
+
+    <!-- War Modal -->
+    <div id="war-modal" class="war-modal">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-sm mx-4">
+            <h3 class="text-lg font-bold mb-3 text-center">⚔️ اعلان جنگ</h3>
+            <p class="text-gray-300 mb-4 text-center text-sm">کشور مورد نظر برای حمله را انتخاب کنید</p>
+            
+            <div class="space-y-2 mb-4 max-h-60 overflow-y-auto" id="enemy-countries">
+                <!-- Enemy countries will be populated -->
+            </div>
+            
+            <div class="flex space-x-2 space-x-reverse">
+                <button class="action-btn flex-1 text-sm py-3" onclick="startWar()">شروع جنگ</button>
+                <button class="bg-gray-600 text-white px-4 py-3 rounded flex-1 text-sm" onclick="closeWarModal()">انصراف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" class="war-modal">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-sm mx-4">
+            <h3 class="text-lg font-bold mb-4 text-center">🔑 ورود به پنل مدیریت</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold mb-2">رمز عبور:</label>
+                    <input type="password" id="admin-password" class="w-full p-3 bg-gray-700 rounded-lg text-white" placeholder="رمز عبور را وارد کنید">
+                </div>
+                
+                <div class="flex space-x-2 space-x-reverse">
+                    <button class="action-btn flex-1 text-sm py-3" onclick="checkAdminPassword()">ورود</button>
+                    <button class="bg-gray-600 text-white px-4 py-3 rounded flex-1 text-sm" onclick="closeAdminLogin()">انصراف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="admin-panel-modal" class="war-modal">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 max-h-96 overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4 text-center">🔑 پنل مدیریت</h3>
+            
+            <div class="space-y-4">
+                <!-- Resource Editor -->
+                <div class="bg-red-900 rounded-lg p-4">
+                    <h4 class="font-bold mb-3 text-red-300">⚡ ویرایش منابع</h4>
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <label class="text-sm w-16">💰 پول:</label>
+                            <input type="number" id="admin-money" class="flex-1 p-2 bg-gray-700 rounded text-white text-sm" placeholder="0">
+                            <button class="bg-green-600 px-3 py-1 rounded text-xs" onclick="handleAdminAction('setMoney')">تنظیم</button>
+                        </div>
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <label class="text-sm w-16">👥 جمعیت:</label>
+                            <input type="number" id="admin-population" class="flex-1 p-2 bg-gray-700 rounded text-white text-sm" placeholder="0">
+                            <button class="bg-green-600 px-3 py-1 rounded text-xs" onclick="handleAdminAction('setPopulation')">تنظیم</button>
+                        </div>
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <label class="text-sm w-16">⚔️ ارتش:</label>
+                            <input type="number" id="admin-army" class="flex-1 p-2 bg-gray-700 rounded text-white text-sm" placeholder="0">
+                            <button class="bg-green-600 px-3 py-1 rounded text-xs" onclick="handleAdminAction('setArmy')">تنظیم</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-yellow-900 rounded-lg p-4">
+                    <h4 class="font-bold mb-3 text-yellow-300">⚡ اقدامات سریع</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="bg-green-600 text-white px-3 py-2 rounded text-xs" onclick="handleAdminAction('maxAll')">
+                            🚀 حداکثر همه
+                        </button>
+                        <button class="bg-blue-600 text-white px-3 py-2 rounded text-xs" onclick="handleAdminAction('addMillion')">
+                            💰 +1M پول
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Players List -->
+                <div class="bg-purple-900 rounded-lg p-4">
+                    <h4 class="font-bold mb-3 text-purple-300">👥 لیست بازیکنان</h4>
+                    <div class="space-y-2">
+                        <button class="bg-purple-600 text-white px-4 py-2 rounded text-sm w-full" onclick="refreshPlayersList()">
+                            🔄 بروزرسانی لیست
+                        </button>
+                        <div class="max-h-64 overflow-y-auto space-y-1" id="players-list">
+                            <!-- Players will be populated here -->
+                        </div>
+                        <div class="text-xs text-purple-300 text-center" id="players-count">
+                            تعداد بازیکنان: 0
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <a href="https://rubika.ir/worldpolitics" target="_blank" rel="noopener noreferrer" class="block bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded w-full text-sm text-center font-bold transition-colors">
+                        📱 کانال روبیکا
+                    </a>
+                    <button class="bg-gray-600 text-white px-4 py-3 rounded w-full text-sm" onclick="closeAdminPanel()">
+                        بستن پنل مدیریت
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Panel Modal -->
+    <div id="user-panel-modal" class="war-modal">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-sm mx-4 max-h-96 overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4 text-center">👤 پروفایل کاربری</h3>
+            
+            <div class="space-y-4">
+                <!-- User Profile Info -->
+                <div class="bg-gray-700 rounded-lg p-4 text-center">
+                    <div class="w-16 h-16 mx-auto mb-3 bg-blue-600 rounded-full flex items-center justify-center text-2xl" id="profile-avatar">👤</div>
+                    <h4 class="font-bold text-lg" id="profile-username">کاربر</h4>
+                    <p class="text-sm text-gray-300">سطح <span id="profile-level">1</span> • <span id="profile-xp">0</span> XP</p>
+                </div>
+
+                <!-- User Stats -->
+                <div class="bg-gray-700 rounded-lg p-4">
+                    <h4 class="font-bold mb-3">📊 آمار کلی</h4>
+                    <div class="stats-grid text-sm">
+                        <div>🎮 بازی‌های انجام شده: <span id="games-played">0</span></div>
+                        <div>🏆 پیروزی‌ها: <span id="wars-won">0</span></div>
+                        <div>💰 کل پول کسب شده: <span id="total-money">0</span></div>
+                        <div>⚔️ جنگ‌های برده: <span id="total-wars">0</span></div>
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <a href="https://rubika.ir/worldpolitics" target="_blank" rel="noopener noreferrer" class="block bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded w-full text-sm text-center font-bold transition-colors">
+                        📱 کانال روبیکا
+                    </a>
+                    <button class="action-btn text-sm py-3" onclick="saveCurrentGame()">
+                        💾 ذخیره بازی فعلی
+                    </button>
+                    <button class="bg-red-600 text-white px-4 py-3 rounded w-full text-sm" onclick="resetGame()">
+                        🔄 شروع بازی جدید
+                    </button>
+                    <button class="bg-gray-600 text-white px-4 py-3 rounded w-full text-sm" onclick="closeUserPanel()">
+                        بستن
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div id="notification-text"></div>
+    </div>
+
+    <!-- Hidden Recovery Element -->
+    <div id="recovery-data" style="display: none;"></div>
+
+    <script>
+        // Enhanced Game State with Persistence
+        let gameState = {
+            selectedCountry: null,
+            day: 1,
+            countries: {
+                // قدرت‌های بزرگ
+                usa: { name: 'آمریکا', flag: '🇺🇸', president: 'دونالد ترامپ', money: 250000, population: 335000000, army: 18000, technology: 95, dailyIncome: 12000, centrifuges: 0, missiles: 80, nuclearProgram: 100 },
+                china: { name: 'چین', flag: '🇨🇳', president: 'شی جین پینگ', money: 200000, population: 1420000000, army: 15000, technology: 85, dailyIncome: 10000, centrifuges: 0, missiles: 70, nuclearProgram: 95 },
+                russia: { name: 'روسیه', flag: '🇷🇺', president: 'ولادیمیر پوتین', money: 120000, population: 144000000, army: 12000, technology: 75, dailyIncome: 6000, centrifuges: 0, missiles: 90, nuclearProgram: 100 },
+                india: { name: 'هند', flag: '🇮🇳', president: 'نارندرا مودی', money: 90000, population: 1430000000, army: 10000, technology: 65, dailyIncome: 5500, centrifuges: 0, missiles: 50, nuclearProgram: 85 },
+                
+                // اروپا
+                germany: { name: 'آلمان', flag: '🇩🇪', president: 'اولاف شولتز', money: 140000, population: 84000000, army: 5000, technology: 90, dailyIncome: 7000, centrifuges: 0, missiles: 10, nuclearProgram: 0 },
+                france: { name: 'فرانسه', flag: '🇫🇷', president: 'امانوئل مکرون', money: 130000, population: 68000000, army: 4500, technology: 88, dailyIncome: 6500, centrifuges: 0, missiles: 40, nuclearProgram: 90 },
+                uk: { name: 'انگلستان', flag: '🇬🇧', president: 'کیر استارمر', money: 120000, population: 68000000, army: 4000, technology: 87, dailyIncome: 6000, centrifuges: 0, missiles: 35, nuclearProgram: 85 },
+                italy: { name: 'ایتالیا', flag: '🇮🇹', president: 'جورجا ملونی', money: 100000, population: 59000000, army: 3000, technology: 80, dailyIncome: 5000, centrifuges: 0, missiles: 12, nuclearProgram: 0 },
+                spain: { name: 'اسپانیا', flag: '🇪🇸', president: 'پدرو سانچز', money: 85000, population: 48000000, army: 2800, technology: 78, dailyIncome: 4500, centrifuges: 0, missiles: 8, nuclearProgram: 0 },
+                poland: { name: 'لهستان', flag: '🇵🇱', president: 'آندژی دودا', money: 65000, population: 38000000, army: 3500, technology: 70, dailyIncome: 3500, centrifuges: 0, missiles: 15, nuclearProgram: 0 },
+                netherlands: { name: 'هلند', flag: '🇳🇱', president: 'مارک روته', money: 95000, population: 17500000, army: 1800, technology: 85, dailyIncome: 5000, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                belgium: { name: 'بلژیک', flag: '🇧🇪', president: 'الکساندر دکرو', money: 55000, population: 11600000, army: 1200, technology: 82, dailyIncome: 3000, centrifuges: 0, missiles: 3, nuclearProgram: 0 },
+                switzerland: { name: 'سوئیس', flag: '🇨🇭', president: 'آلن برست', money: 85000, population: 8800000, army: 800, technology: 88, dailyIncome: 4500, centrifuges: 0, missiles: 2, nuclearProgram: 0 },
+                austria: { name: 'اتریش', flag: '🇦🇹', president: 'الکساندر ون در بلن', money: 50000, population: 9000000, army: 900, technology: 80, dailyIncome: 2800, centrifuges: 0, missiles: 2, nuclearProgram: 0 },
+                sweden: { name: 'سوئد', flag: '🇸🇪', president: 'اولف کریسترسون', money: 60000, population: 10500000, army: 1500, technology: 85, dailyIncome: 3500, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                norway: { name: 'نروژ', flag: '🇳🇴', president: 'یوناس گار استوره', money: 75000, population: 5400000, army: 1000, technology: 83, dailyIncome: 4000, centrifuges: 0, missiles: 3, nuclearProgram: 0 },
+                denmark: { name: 'دانمارک', flag: '🇩🇰', president: 'مته فردریکسن', money: 65000, population: 5900000, army: 1200, technology: 82, dailyIncome: 3500, centrifuges: 0, missiles: 4, nuclearProgram: 0 },
+                finland: { name: 'فنلاند', flag: 'FI', president: 'ساولی نینیستو', money: 55000, population: 5500000, army: 1800, technology: 80, dailyIncome: 3000, centrifuges: 0, missiles: 6, nuclearProgram: 0 },
+                greece: { name: 'یونان', flag: '🇬🇷', president: 'کیریاکوس میتسوتاکیس', money: 35000, population: 10700000, army: 2500, technology: 65, dailyIncome: 2000, centrifuges: 0, missiles: 8, nuclearProgram: 0 },
+                portugal: { name: 'پرتغال', flag: '🇵🇹', president: 'آنتونیو کاستا', money: 40000, population: 10300000, army: 1500, technology: 70, dailyIncome: 2200, centrifuges: 0, missiles: 4, nuclearProgram: 0 },
+                czechia: { name: 'چک', flag: '🇨🇿', president: 'پتر فیالا', money: 45000, population: 10700000, army: 1800, technology: 72, dailyIncome: 2500, centrifuges: 0, missiles: 6, nuclearProgram: 0 },
+                hungary: { name: 'مجارستان', flag: '🇭🇺', president: 'ویکتور اوربان', money: 35000, population: 9700000, army: 1600, technology: 68, dailyIncome: 2000, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                romania: { name: 'رومانی', flag: '🇷🇴', president: 'کلاوس یوهانیس', money: 40000, population: 19000000, army: 2200, technology: 65, dailyIncome: 2200, centrifuges: 0, missiles: 7, nuclearProgram: 0 },
+                bulgaria: { name: 'بلغارستان', flag: '🇧🇬', president: 'رومن رادف', money: 25000, population: 6900000, army: 1200, technology: 60, dailyIncome: 1500, centrifuges: 0, missiles: 4, nuclearProgram: 0 },
+                croatia: { name: 'کرواسی', flag: '🇭🇷', president: 'زوران میلانوویچ', money: 30000, population: 3900000, army: 800, technology: 68, dailyIncome: 1800, centrifuges: 0, missiles: 3, nuclearProgram: 0 },
+                ukraine: { name: 'اوکراین', flag: '🇺🇦', president: 'ولودیمیر زلنسکی', money: 25000, population: 41000000, army: 8000, technology: 55, dailyIncome: 1200, centrifuges: 0, missiles: 20, nuclearProgram: 0 },
+                belarus: { name: 'بلاروس', flag: '🇧🇾', president: 'الکساندر لوکاشنکو', money: 20000, population: 9400000, army: 2500, technology: 50, dailyIncome: 1000, centrifuges: 0, missiles: 8, nuclearProgram: 0 },
+                
+                // آسیا
+                japan: { name: 'ژاپن', flag: '🇯🇵', president: 'فومیو کیشیدا', money: 150000, population: 124000000, army: 3500, technology: 96, dailyIncome: 8000, centrifuges: 0, missiles: 20, nuclearProgram: 0 },
+                southkorea: { name: 'کره جنوبی', flag: '🇰🇷', president: 'یون سوک یول', money: 110000, population: 52000000, army: 4500, technology: 92, dailyIncome: 6000, centrifuges: 0, missiles: 18, nuclearProgram: 0 },
+                northkorea: { name: 'کره شمالی', flag: '🇰🇵', president: 'کیم جونگ اون', money: 30000, population: 26000000, army: 7000, technology: 40, dailyIncome: 1200, centrifuges: 10, missiles: 50, nuclearProgram: 70 },
+                indonesia: { name: 'اندونزی', flag: '🇮🇩', president: 'جوکو ویدودو', money: 70000, population: 275000000, army: 6000, technology: 55, dailyIncome: 3500, centrifuges: 0, missiles: 12, nuclearProgram: 0 },
+                thailand: { name: 'تایلند', flag: '🇹🇭', president: 'پرایوت چان اوچا', money: 55000, population: 70000000, army: 3500, technology: 60, dailyIncome: 2800, centrifuges: 0, missiles: 8, nuclearProgram: 0 },
+                vietnam: { name: 'ویتنام', flag: '🇻🇳', president: 'نگوین فو ترونگ', money: 45000, population: 98000000, army: 4500, technology: 50, dailyIncome: 2200, centrifuges: 0, missiles: 10, nuclearProgram: 0 },
+                philippines: { name: 'فیلیپین', flag: '🇵🇭', president: 'فردیناند مارکوس', money: 40000, population: 112000000, army: 3000, technology: 45, dailyIncome: 2000, centrifuges: 0, missiles: 6, nuclearProgram: 0 },
+                malaysia: { name: 'مالزی', flag: '🇲🇾', president: 'انور ابراهیم', money: 50000, population: 33000000, army: 2200, technology: 65, dailyIncome: 2500, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                singapore: { name: 'سنگاپور', flag: '🇸🇬', president: 'لی شین لونگ', money: 65000, population: 6000000, army: 800, technology: 90, dailyIncome: 3500, centrifuges: 0, missiles: 3, nuclearProgram: 0 },
+                bangladesh: { name: 'بنگلادش', flag: '🇧🇩', president: 'شیخ حسینه', money: 35000, population: 170000000, army: 4000, technology: 35, dailyIncome: 1800, centrifuges: 0, missiles: 4, nuclearProgram: 0 },
+                myanmar: { name: 'میانمار', flag: '🇲🇲', president: 'مین آنگ هلاینگ', money: 20000, population: 55000000, army: 3500, technology: 30, dailyIncome: 800, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                srilanka: { name: 'سری‌لانکا', flag: '🇱🇰', president: 'رانیل ویکرمسینگه', money: 15000, population: 22000000, army: 1500, technology: 40, dailyIncome: 600, centrifuges: 0, missiles: 2, nuclearProgram: 0 },
+                nepal: { name: 'نپال', flag: '🇳🇵', president: 'رام چندرا پودل', money: 12000, population: 30000000, army: 800, technology: 25, dailyIncome: 400, centrifuges: 0, missiles: 1, nuclearProgram: 0 },
+                afghanistan: { name: 'افغانستان', flag: '🇦🇫', president: 'هیبت‌الله آخوندزاده', money: 8000, population: 40000000, army: 5000, technology: 20, dailyIncome: 300, centrifuges: 0, missiles: 3, nuclearProgram: 0 },
+                
+                // خاورمیانه
+                iran: { name: 'ایران', flag: '🇮🇷', president: 'مسعود پزشکیان', money: 65000, population: 86000000, army: 6000, technology: 45, dailyIncome: 3500, centrifuges: 8, missiles: 35, nuclearProgram: 65 },
+                turkey: { name: 'ترکیه', flag: '🇹🇷', president: 'رجب طیب اردوغان', money: 85000, population: 85000000, army: 5500, technology: 65, dailyIncome: 4500, centrifuges: 0, missiles: 25, nuclearProgram: 0 },
+                israel: { name: 'اسرائیل', flag: '🇮🇱', president: 'بنیامین نتانیاهو', money: 100000, population: 10000000, army: 5500, technology: 94, dailyIncome: 5500, centrifuges: 0, missiles: 60, nuclearProgram: 95 },
+                saudiarabia: { name: 'عربستان', flag: '🇸🇦', president: 'محمد بن سلمان', money: 140000, population: 37000000, army: 6500, technology: 60, dailyIncome: 8000, centrifuges: 0, missiles: 30, nuclearProgram: 0 },
+                uae: { name: 'امارات', flag: '🇦🇪', president: 'محمد بن زاید', money: 120000, population: 10000000, army: 2500, technology: 75, dailyIncome: 6000, centrifuges: 0, missiles: 15, nuclearProgram: 0 },
+                qatar: { name: 'قطر', flag: '🇶🇦', president: 'تمیم بن حمد', money: 95000, population: 3000000, army: 800, technology: 70, dailyIncome: 4500, centrifuges: 0, missiles: 8, nuclearProgram: 0 },
+                kuwait: { name: 'کویت', flag: '🇰🇼', president: 'نواف الاحمد', money: 75000, population: 4500000, army: 1200, technology: 65, dailyIncome: 3500, centrifuges: 0, missiles: 6, nuclearProgram: 0 },
+                bahrain: { name: 'بحرین', flag: '🇧🇭', president: 'حمد بن عیسی', money: 35000, population: 1800000, army: 600, technology: 60, dailyIncome: 1500, centrifuges: 0, missiles: 3, nuclearProgram: 0 },
+                oman: { name: 'عمان', flag: '🇴🇲', president: 'هیثم بن طارق', money: 45000, population: 5200000, army: 1500, technology: 55, dailyIncome: 2000, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                jordan: { name: 'اردن', flag: '🇯🇴', president: 'عبدالله دوم', money: 25000, population: 11000000, army: 2000, technology: 50, dailyIncome: 1200, centrifuges: 0, missiles: 4, nuclearProgram: 0 },
+                lebanon: { name: 'لبنان', flag: '🇱🇧', president: 'میشل عون', money: 15000, population: 7000000, army: 1200, technology: 45, dailyIncome: 600, centrifuges: 0, missiles: 2, nuclearProgram: 0 },
+                syria: { name: 'سوریه', flag: '🇸🇾', president: 'بشار اسد', money: 12000, population: 22000000, army: 3500, technology: 35, dailyIncome: 500, centrifuges: 0, missiles: 8, nuclearProgram: 0 },
+                iraq: { name: 'عراق', flag: '🇮🇶', president: 'محمد شیاع السودانی', money: 35000, population: 42000000, army: 4000, technology: 40, dailyIncome: 1800, centrifuges: 0, missiles: 10, nuclearProgram: 0 },
+                yemen: { name: 'یمن', flag: '🇾🇪', president: 'رشاد العلیمی', money: 8000, population: 31000000, army: 2500, technology: 25, dailyIncome: 300, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                
+                // آفریقا
+                egypt: { name: 'مصر', flag: '🇪🇬', president: 'عبدالفتاح السیسی', money: 55000, population: 108000000, army: 7000, technology: 40, dailyIncome: 3000, centrifuges: 0, missiles: 15, nuclearProgram: 0 },
+                southafrica: { name: 'آفریقای جنوبی', flag: '🇿🇦', president: 'سیریل راماپوزا', money: 50000, population: 60000000, army: 3000, technology: 55, dailyIncome: 2500, centrifuges: 0, missiles: 8, nuclearProgram: 0 },
+                nigeria: { name: 'نیجریه', flag: '🇳🇬', president: 'بولا تینوبو', money: 45000, population: 225000000, army: 5000, technology: 35, dailyIncome: 2200, centrifuges: 0, missiles: 6, nuclearProgram: 0 },
+                kenya: { name: 'کنیا', flag: '🇰🇪', president: 'ویلیام روتو', money: 25000, population: 56000000, army: 2000, technology: 30, dailyIncome: 1200, centrifuges: 0, missiles: 3, nuclearProgram: 0 },
+                ethiopia: { name: 'اتیوپی', flag: '🇪🇹', president: 'آبی احمد', money: 20000, population: 120000000, army: 3500, technology: 25, dailyIncome: 800, centrifuges: 0, missiles: 4, nuclearProgram: 0 },
+                morocco: { name: 'مراکش', flag: '🇲🇦', president: 'محمد ششم', money: 35000, population: 38000000, army: 2500, technology: 45, dailyIncome: 1800, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                algeria: { name: 'الجزایر', flag: '🇩🇿', president: 'عبدالمجید تبون', money: 40000, population: 45000000, army: 3000, technology: 40, dailyIncome: 2000, centrifuges: 0, missiles: 8, nuclearProgram: 0 },
+                tunisia: { name: 'تونس', flag: '🇹🇳', president: 'قیس سعید', money: 20000, population: 12000000, army: 1200, technology: 50, dailyIncome: 1000, centrifuges: 0, missiles: 2, nuclearProgram: 0 },
+                libya: { name: 'لیبی', flag: '🇱🇾', president: 'عبدالحمید دبیبه', money: 25000, population: 7000000, army: 2000, technology: 35, dailyIncome: 1200, centrifuges: 0, missiles: 6, nuclearProgram: 0 },
+                sudan: { name: 'سودان', flag: '🇸🇩', president: 'عبدالفتاح البرهان', money: 15000, population: 47000000, army: 3000, technology: 25, dailyIncome: 600, centrifuges: 0, missiles: 4, nuclearProgram: 0 },
+                
+                // آمریکا
+                canada: { name: 'کانادا', flag: '🇨🇦', president: 'جاستین ترودو', money: 120000, population: 40000000, army: 2200, technology: 88, dailyIncome: 6500, centrifuges: 0, missiles: 10, nuclearProgram: 0 },
+                mexico: { name: 'مکزیک', flag: '🇲🇽', president: 'آندرس لوپز', money: 75000, population: 130000000, army: 4000, technology: 60, dailyIncome: 3500, centrifuges: 0, missiles: 8, nuclearProgram: 0 },
+                brazil: { name: 'برزیل', flag: '🇧🇷', president: 'لولا دا سیلوا', money: 90000, population: 218000000, army: 5000, technology: 60, dailyIncome: 4500, centrifuges: 0, missiles: 15, nuclearProgram: 0 },
+                argentina: { name: 'آرژانتین', flag: '🇦🇷', president: 'خاویر میلی', money: 55000, population: 46000000, army: 2500, technology: 65, dailyIncome: 2800, centrifuges: 0, missiles: 6, nuclearProgram: 0 },
+                chile: { name: 'شیلی', flag: '🇨🇱', president: 'گابریل بوریچ', money: 45000, population: 20000000, army: 1800, technology: 70, dailyIncome: 2500, centrifuges: 0, missiles: 4, nuclearProgram: 0 },
+                colombia: { name: 'کلمبیا', flag: '🇨🇴', president: 'گوستاوو پترو', money: 40000, population: 52000000, army: 3000, technology: 55, dailyIncome: 2200, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                peru: { name: 'پرو', flag: '🇵🇪', president: 'دینا بولوارته', money: 30000, population: 34000000, army: 2000, technology: 50, dailyIncome: 1500, centrifuges: 0, missiles: 3, nuclearProgram: 0 },
+                venezuela: { name: 'ونزوئلا', flag: '🇻🇪', president: 'نیکولاس مادورو', money: 25000, population: 28000000, army: 2500, technology: 40, dailyIncome: 1200, centrifuges: 0, missiles: 6, nuclearProgram: 0 },
+                ecuador: { name: 'اکوادور', flag: '🇪🇨', president: 'دانیل نوبوآ', money: 20000, population: 18000000, army: 1200, technology: 45, dailyIncome: 1000, centrifuges: 0, missiles: 2, nuclearProgram: 0 },
+                bolivia: { name: 'بولیوی', flag: '🇧🇴', president: 'لوئیس آرسه', money: 15000, population: 12000000, army: 1000, technology: 35, dailyIncome: 600, centrifuges: 0, missiles: 1, nuclearProgram: 0 },
+                
+                // اقیانوسیه
+                australia: { name: 'استرالیا', flag: '🇦🇺', president: 'آنتونی آلبانیز', money: 105000, population: 27000000, army: 2500, technology: 85, dailyIncome: 5500, centrifuges: 0, missiles: 12, nuclearProgram: 0 },
+                newzealand: { name: 'نیوزیلند', flag: '🇳🇿', president: 'کریس هیپکینز', money: 45000, population: 5200000, army: 800, technology: 80, dailyIncome: 2500, centrifuges: 0, missiles: 2, nuclearProgram: 0 },
+                
+                // کشورهای دیگر آسیا
+                pakistan: { name: 'پاکستان', flag: '🇵🇰', president: 'شهباز شریف', money: 50000, population: 240000000, army: 8000, technology: 45, dailyIncome: 2800, centrifuges: 0, missiles: 40, nuclearProgram: 80 },
+                kazakhstan: { name: 'قزاقستان', flag: '🇰🇿', president: 'قاسم توکایف', money: 45000, population: 20000000, army: 2000, technology: 55, dailyIncome: 2200, centrifuges: 0, missiles: 5, nuclearProgram: 0 },
+                uzbekistan: { name: 'ازبکستان', flag: '🇺🇿', president: 'شوکت میرضیایف', money: 25000, population: 35000000, army: 2500, technology: 40, dailyIncome: 1200, centrifuges: 0, missiles: 4, nuclearProgram: 0 },
+                mongolia: { name: 'مغولستان', flag: '🇲🇳', president: 'اخلتگین باتتولگا', money: 15000, population: 3400000, army: 800, technology: 45, dailyIncome: 600, centrifuges: 0, missiles: 1, nuclearProgram: 0 }
+            },
+            selectedEnemy: null,
+            worldNews: []
+        };
+
+        // Enhanced User Profile with Permanent Account System
+        let userProfile = {
+            username: '',
+            avatar: '👤',
+            level: 1,
+            xp: 0,
+            gamesPlayed: 0,
+            warsWon: 0,
+            totalMoney: 0,
+            totalWars: 0,
+            achievements: [],
+            joinDate: Date.now(),
+            profileId: generateUniqueId(),
+            selectedCountry: null,
+            permanentCountry: null, // Country locked forever
+            lastActive: Date.now(),
+            ipAddress: 'Unknown',
+            deviceInfo: navigator.userAgent || 'Unknown',
+            savedGames: []
+        };
+
+        // Available avatars
+        const avatars = ['👤', '👨', '👩', '🧑', '👨‍💼', '👩‍💼', '👨‍🎓', '👩‍🎓', '👨‍⚖️', '👩‍⚖️', '👨‍🔬', '👩‍🔬', '👨‍💻', '👩‍💻', '👨‍🎨', '👩‍🎨'];
+        let selectedAvatar = '👤';
+
+        // Admin passwords
+        const adminPasswords = ['admin123', 'مدیر', 'manager', '1234567890', 'password'];
+
+        // Achievements
+        const achievementsList = [
+            { id: 'first_game', name: 'اولین بازی', description: 'اولین بازی خود را شروع کردید', icon: '🎮', xp: 100 },
+            { id: 'first_war', name: 'جنگجوی تازه‌کار', description: 'اولین جنگ خود را برده شدید', icon: '⚔️', xp: 200 },
+            { id: 'rich_player', name: 'میلیونر', description: '1 میلیون دلار کسب کردید', icon: '💰', xp: 300 },
+            { id: 'tech_master', name: 'استاد تکنولوژی', description: 'تکنولوژی 80% رسیدید', icon: '💻', xp: 250 },
+            { id: 'population_boom', name: 'انفجار جمعیت', description: 'جمعیت 100 میلیون نفر رسیدید', icon: '👥', xp: 200 },
+            { id: 'war_veteran', name: 'کهنه‌سرباز', description: '10 جنگ برده شدید', icon: '🏆', xp: 500 },
+            { id: 'economic_power', name: 'قدرت اقتصادی', description: 'درآمد روزانه 10K رسیدید', icon: '🏭', xp: 300 }
+        ];
+
+        // Daily World News Data
+        const dailyWorldNews = [
+            "🇺🇸 آمریکا تحریم‌های جدیدی علیه چین اعمال کرد",
+            "🇷🇺 روسیه تولید گاز خود را افزایش داد",
+            "🇨🇳 چین در حال توسعه فناوری هوش مصنوعی است",
+            "🇮🇷 ایران برنامه هسته‌ای خود را گسترش می‌دهد",
+            "🇮🇱 اسرائیل سیستم دفاع موشکی جدید آزمایش کرد",
+            "🇹🇷 ترکیه با کشورهای همسایه توافق تجاری امضا کرد",
+            "🇸🇦 عربستان در انرژی‌های تجدیدپذیر سرمایه‌گذاری کرد",
+            "🇰🇵 کره شمالی موشک بالستیک جدید آزمایش کرد",
+            "🇯🇵 ژاپن تکنولوژی کوانتوم توسعه می‌دهد",
+            "🇩🇪 آلمان صادرات خود به آسیا افزایش داد",
+            "🇫🇷 فرانسه نیروگاه هسته‌ای جدید می‌سازد",
+            "🇬🇧 انگلستان توافق تجاری جدید امضا کرد",
+            "🇮🇳 هند جمعیت خود را افزایش داد",
+            "🇧🇷 برزیل جنگل‌های آمازون را حفاظت می‌کند",
+            "🇦🇺 استرالیا معادن جدید کشف کرد",
+            "🇨🇦 کانادا صادرات نفت افزایش داد",
+            "🇲🇽 مکزیک با آمریکا توافق مرزی امضا کرد",
+            "🇪🇬 مصر پروژه کانال سوئز را گسترش می‌دهد",
+            "🇿🇦 آفریقای جنوبی معادن طلا کشف کرد",
+            "🇳🇬 نیجریه تولید نفت افزایش داد",
+            "🇦🇪 امارات شهر هوشمند جدید می‌سازد",
+            "🇶🇦 قطر برای جام جهانی آماده می‌شود",
+            "🇰🇼 کویت پالایشگاه جدید افتتاح کرد",
+            "🇴🇲 عمان بندر تجاری جدید ساخت",
+            "🇯🇴 اردن آب شیرین‌کن دریا می‌سازد",
+            "🇱🇧 لبنان کمک‌های بین‌المللی دریافت کرد",
+            "🇸🇾 سوریه بازسازی شهرها را شروع کرد",
+            "🇮🇶 عراق تولید نفت افزایش داد",
+            "🇦🇫 افغانستان کمک‌های بشردوستانه دریافت کرد",
+            "🇵🇰 پاکستان پروژه راه ابریشم گسترش می‌دهد",
+            "🇧🇩 بنگلادش صنایع نساجی توسعه داد",
+            "🇱🇰 سری‌لانکا بحران اقتصادی را حل می‌کند",
+            "🇲🇲 میانمار درگیری‌های داخلی ادامه دارد",
+            "🇹🇭 تایلند گردشگری را بازگشایی کرد",
+            "🇻🇳 ویتنام صادرات برنج افزایش داد",
+            "🇵🇭 فیلیپین با طوفان مبارزه می‌کند",
+            "🇲🇾 مالزی صنایع نیمه‌هادی توسعه داد",
+            "🇸🇬 سنگاپور مرکز مالی آسیا شد",
+            "🇮🇩 اندونزی آتشفشان فعال شد",
+            "🇰🇷 کره جنوبی تکنولوژی 5G گسترش داد",
+            "🇰🇿 قزاقستان اورانیوم بیشتری استخراج کرد",
+            "🇺🇿 ازبکستان گاز طبیعی صادر می‌کند",
+            "🇲🇳 مغولستان معادن مس کشف کرد",
+            "🇪🇹 اتیوپی سد جدید ساخت",
+            "🇰🇪 کنیا انرژی خورشیدی توسعه داد",
+            "🇳🇬 نیجریه فناوری اطلاعات رشد کرد",
+            "🇲🇦 مراکش انرژی بادی افزایش داد",
+            "🇩🇿 الجزایر گاز طبیعی صادر کرد",
+            "🇹🇳 تونس گردشگری را بهبود بخشید",
+            "🇱🇾 لیبی تولید نفت از سر گرفت",
+            "🇸🇩 سودان کشاورزی را توسعه داد",
+            "🇦🇷 آرژانتین گوشت صادر می‌کند",
+            "🇨🇱 شیلی مس بیشتری استخراج کرد",
+            "🇨🇴 کلمبیا قهوه صادر می‌کند",
+            "🇵🇪 پرو طلا استخراج کرد",
+            "🇻🇪 ونزوئلا نفت بیشتری تولید کرد",
+            "🇪🇨 اکوادور موز صادر می‌کند",
+            "🇧🇴 بولیوی لیتیوم استخراج کرد",
+            "🇳🇿 نیوزیلند گردشگری بازگشایی کرد",
+            "🇵🇱 لهستان اقتصاد رشد کرد",
+            "🇳🇱 هلند فناوری کشاورزی توسعه داد",
+            "🇧🇪 بلژیک مرکز اروپا باقی ماند",
+            "🇨🇭 سوئیس بانکداری را بهبود بخشید",
+            "🇦🇹 اتریش گردشگری افزایش داد",
+            "🇸🇪 سوئد فناوری سبز توسعه داد",
+            "🇳🇴 نروژ نفت دریای شمال تولید کرد",
+            "🇩🇰 دانمارک انرژی بادی گسترش داد",
+            "🇫🇮 فنلاند فناوری اطلاعات رشد کرد",
+            "🇬🇷 یونان گردشگری بهبود یافت",
+            "🇵🇹 پرتغال انرژی تجدیدپذیر افزایش داد",
+            "🇨🇿 چک صنایع خودرو توسعه داد",
+            "🇭🇺 مجارستان سرمایه‌گذاری خارجی جذب کرد",
+            "🇷🇴 رومانی کشاورزی بهبود یافت",
+            "🇧🇬 بلغارستان گردشگری افزایش داد",
+            "🇭🇷 کرواسی به اتحادیه اروپا پیوست",
+            "🇺🇦 اوکراین غلات صادر می‌کند",
+            "🇧🇾 بلاروس کشاورزی توسعه داد"
+        ];
+
+        // Utility Functions
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function getRandomNews(count = 8) {
+            const shuffled = [...dailyWorldNews].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        function showDailyNews() {
+            const newsContainer = document.getElementById('daily-news-container');
+            const todayNews = getRandomNews(8);
+            
+            newsContainer.innerHTML = todayNews.map(news => `
+                <div class="p-3 bg-blue-800 rounded-lg border-l-4 border-yellow-400">
+                    <div class="text-sm text-white">${news}</div>
+                    <div class="text-xs text-blue-200 mt-1">منبع: خبرگزاری جهانی</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('start-game-section').style.display = 'none';
+            document.getElementById('daily-news-section').style.display = 'block';
+        }
+
+        // Utility Functions
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            
+            notificationText.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Enhanced Profile Management with 15+ Backup Systems
+        function saveProfilePermanently() {
+            try {
+                const profileData = JSON.stringify(userProfile);
+                const gameData = JSON.stringify(gameState);
+                const timestamp = Date.now();
+                
+                // Method 1-5: Multiple localStorage backups
+                localStorage.setItem('worldPoliticsProfile_main', profileData);
+                localStorage.setItem('worldPoliticsProfile_backup', profileData);
+                localStorage.setItem('worldPoliticsProfile_' + timestamp, profileData);
+                localStorage.setItem('worldPoliticsGame_main', gameData);
+                localStorage.setItem('worldPoliticsGame_backup', gameData);
+                
+                // Method 6-8: Username and ID based backups
+                if (userProfile.username) {
+                    localStorage.setItem('worldPoliticsProfile_user_' + userProfile.username, profileData);
+                    localStorage.setItem('worldPoliticsGame_user_' + userProfile.username, gameData);
+                }
+                if (userProfile.profileId) {
+                    localStorage.setItem('worldPoliticsProfile_id_' + userProfile.profileId, profileData);
+                }
+                
+                // Method 9-12: Session storage backups
+                sessionStorage.setItem('worldPoliticsProfile_session', profileData);
+                sessionStorage.setItem('worldPoliticsProfile_session_backup', profileData);
+                sessionStorage.setItem('worldPoliticsGame_session', gameData);
+                sessionStorage.setItem('worldPoliticsProfile_session_' + timestamp, profileData);
+                
+                // Save to global players list
+                savePlayerToGlobalList();
+                
+                return true;
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                return false;
+            }
+        }
+
+        function loadProfilePermanently() {
+            try {
+                let savedProfile = null;
+                let savedGame = null;
+                
+                // Try all backup methods in order of preference
+                const backupMethods = [
+                    'worldPoliticsProfile_main',
+                    'worldPoliticsProfile_backup',
+                    () => sessionStorage.getItem('worldPoliticsProfile_session'),
+                    () => sessionStorage.getItem('worldPoliticsProfile_session_backup')
+                ];
+
+                // Try each backup method
+                for (const method of backupMethods) {
+                    if (typeof method === 'string') {
+                        savedProfile = localStorage.getItem(method);
+                    } else {
+                        savedProfile = method();
+                    }
+                    if (savedProfile) break;
+                }
+
+                // Try to load game state
+                const gameMethods = [
+                    'worldPoliticsGame_main',
+                    'worldPoliticsGame_backup',
+                    () => sessionStorage.getItem('worldPoliticsGame_session')
+                ];
+
+                for (const method of gameMethods) {
+                    if (typeof method === 'string') {
+                        savedGame = localStorage.getItem(method);
+                    } else {
+                        savedGame = method();
+                    }
+                    if (savedGame) break;
+                }
+
+                if (savedProfile) {
+                    const parsed = JSON.parse(savedProfile);
+                    userProfile = { ...userProfile, ...parsed };
+                    
+                    if (savedGame) {
+                        const parsedGame = JSON.parse(savedGame);
+                        gameState = { ...gameState, ...parsedGame };
+                    }
+                    
+                    // Ensure profile has required fields
+                    if (!userProfile.profileId) {
+                        userProfile.profileId = generateUniqueId();
+                    }
+                    if (!userProfile.joinDate) {
+                        userProfile.joinDate = Date.now();
+                    }
+                    userProfile.lastActive = Date.now();
+                    
+                    // Re-save with all methods
+                    saveProfilePermanently();
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                return false;
+            }
+        }
+
+        function savePlayerToGlobalList() {
+            try {
+                let allPlayers = JSON.parse(localStorage.getItem('worldPolitics_allPlayers') || '[]');
+                
+                const playerData = {
+                    username: userProfile.username,
+                    avatar: userProfile.avatar,
+                    selectedCountry: gameState.selectedCountry,
+                    permanentCountry: userProfile.permanentCountry,
+                    countryName: gameState.selectedCountry ? gameState.countries[gameState.selectedCountry].name : 'هیچ',
+                    countryFlag: gameState.selectedCountry ? gameState.countries[gameState.selectedCountry].flag : '❓',
+                    isPermanent: userProfile.permanentCountry ? true : false,
+                    level: userProfile.level,
+                    xp: userProfile.xp,
+                    gamesPlayed: userProfile.gamesPlayed,
+                    warsWon: userProfile.warsWon,
+                    totalMoney: userProfile.totalMoney,
+                    joinDate: userProfile.joinDate,
+                    lastActive: Date.now(),
+                    profileId: userProfile.profileId,
+                    gameDay: gameState.day || 1,
+                    currentMoney: gameState.selectedCountry ? gameState.countries[gameState.selectedCountry].money : 0,
+                    currentArmy: gameState.selectedCountry ? gameState.countries[gameState.selectedCountry].army : 0,
+                    currentPopulation: gameState.selectedCountry ? gameState.countries[gameState.selectedCountry].population : 0
+                };
+
+                // Remove existing entry for this user
+                allPlayers = allPlayers.filter(p => p.profileId !== userProfile.profileId);
+                
+                // Add updated entry
+                allPlayers.unshift(playerData);
+                
+                // Keep only last 100 players
+                if (allPlayers.length > 100) {
+                    allPlayers = allPlayers.slice(0, 100);
+                }
+                
+                localStorage.setItem('worldPolitics_allPlayers', JSON.stringify(allPlayers));
+                localStorage.setItem('worldPolitics_players_backup', JSON.stringify(allPlayers));
+                sessionStorage.setItem('worldPolitics_players_session', JSON.stringify(allPlayers));
+                
+                return true;
+            } catch (error) {
+                console.error('Error saving player to global list:', error);
+                return false;
+            }
+        }
+
+        function getAllPlayers() {
+            try {
+                let allPlayers = JSON.parse(localStorage.getItem('worldPolitics_allPlayers') || '[]');
+                
+                if (allPlayers.length === 0) {
+                    allPlayers = JSON.parse(localStorage.getItem('worldPolitics_players_backup') || '[]');
+                }
+                
+                if (allPlayers.length === 0) {
+                    allPlayers = JSON.parse(sessionStorage.getItem('worldPolitics_players_session') || '[]');
+                }
+                
+                return allPlayers;
+            } catch (error) {
+                console.error('Error getting all players:', error);
+                return [];
+            }
+        }
+
+        // Enhanced Auto-Save System
+        function startEnhancedAutoSave() {
+            // Save every 5 seconds
+            setInterval(() => {
+                if (userProfile.username) {
+                    saveProfilePermanently();
+                }
+            }, 5000);
+            
+            // Save on any user interaction
+            document.addEventListener('click', () => {
+                if (userProfile.username) {
+                    setTimeout(() => saveProfilePermanently(), 100);
+                }
+            });
+            
+            // Save when leaving page
+            window.addEventListener('beforeunload', () => {
+                if (userProfile.username) {
+                    saveProfilePermanently();
+                    localStorage.setItem('worldPolitics_emergency_exit_' + Date.now(), JSON.stringify(userProfile));
+                }
+            });
+            
+            // Save on visibility change
+            document.addEventListener('visibilitychange', () => {
+                if (userProfile.username) {
+                    saveProfilePermanently();
+                }
+            });
+        }
+
+        // Profile Management Functions
+        function createProfile() {
+            const usernameInput = document.getElementById('username-input');
+            const username = usernameInput.value.trim();
+            
+            if (!username) {
+                showNotification('لطفاً نام کاربری را وارد کنید!', 'error');
+                return;
+            }
+
+            if (username.length < 2) {
+                showNotification('نام کاربری باید حداقل 2 کاراکتر باشد!', 'error');
+                return;
+            }
+
+            userProfile.username = username;
+            userProfile.avatar = selectedAvatar || '👤';
+            userProfile.joinDate = Date.now();
+            userProfile.profileId = generateUniqueId();
+            
+            const saved = saveProfilePermanently();
+            if (saved) {
+                startEnhancedAutoSave();
+                showCountrySelection();
+                showNotification(`✅ پروفایل ${username} ایجاد و در 15+ مکان مختلف ذخیره شد! حساب شما تا ابد محفوظ است. 🔒`);
+                awardAchievement('first_game');
+            } else {
+                showNotification('خطا در ذخیره پروفایل!', 'error');
+            }
+        }
+
+        function loadExistingProfile() {
+            const loaded = loadProfilePermanently();
+            if (loaded && userProfile.username) {
+                if (userProfile.permanentCountry) {
+                    gameState.selectedCountry = userProfile.permanentCountry;
+                    showGameInterface();
+                    showNotification(`🎉 خوش برگشتید ${userProfile.username}! شما رهبر ${gameState.countries[userProfile.permanentCountry].name} هستید! 👑`);
+                } else {
+                    showCountrySelection();
+                    showNotification(`🎉 پروفایل ${userProfile.username} بازیابی شد!`);
+                }
+                startEnhancedAutoSave();
+            } else {
+                showNotification('هیچ پروفایل ذخیره شده‌ای یافت نشد!', 'error');
+            }
+        }
+
+        // Screen Management
+        function showMainHomepage() {
+            document.getElementById('main-homepage').classList.remove('hidden');
+            document.getElementById('profile-setup').classList.add('hidden');
+            document.getElementById('country-selection').classList.add('hidden');
+            document.getElementById('game-interface').classList.add('hidden');
+            document.querySelector('.mobile-header').style.display = 'none';
+        }
+
+        function showProfileSetup() {
+            document.getElementById('main-homepage').classList.add('hidden');
+            document.getElementById('profile-setup').classList.remove('hidden');
+            document.getElementById('country-selection').classList.add('hidden');
+            document.getElementById('game-interface').classList.add('hidden');
+            document.querySelector('.mobile-header').style.display = 'block';
+        }
+
+        function showCountrySelection() {
+            document.getElementById('main-homepage').classList.add('hidden');
+            document.getElementById('profile-setup').classList.add('hidden');
+            document.getElementById('country-selection').classList.remove('hidden');
+            document.getElementById('game-interface').classList.add('hidden');
+            document.querySelector('.mobile-header').style.display = 'block';
+            populateCountriesList();
+        }
+
+        function showGameInterface() {
+            document.getElementById('main-homepage').classList.add('hidden');
+            document.getElementById('profile-setup').classList.add('hidden');
+            document.getElementById('country-selection').classList.add('hidden');
+            document.getElementById('game-interface').classList.remove('hidden');
+            
+            document.querySelector('.mobile-tabs').style.display = 'flex';
+            document.querySelector('.mobile-header').style.display = 'block';
+            document.getElementById('user-panel-btn').style.display = 'block';
+            document.getElementById('user-profile').style.display = 'flex';
+            
+            updateUI();
+            updateHeaderProfile();
+            updateWorldNewsDisplay();
+            startGameLoop();
+        }
+
+        // XP and Achievement System
+        function addXP(amount) {
+            userProfile.xp += amount;
+            const newLevel = Math.floor(userProfile.xp / 1000) + 1;
+            
+            if (newLevel > userProfile.level) {
+                userProfile.level = newLevel;
+                showNotification(`🎉 سطح جدید! شما به سطح ${newLevel} رسیدید!`);
+            }
+            
+            saveProfilePermanently();
+            updateHeaderProfile();
+        }
+
+        function awardAchievement(achievementId) {
+            if (userProfile.achievements.includes(achievementId)) return;
+            
+            const achievement = achievementsList.find(a => a.id === achievementId);
+            if (achievement) {
+                userProfile.achievements.push(achievementId);
+                addXP(achievement.xp);
+                showNotification(`🏅 دستاورد جدید: ${achievement.name}!`);
+                saveProfilePermanently();
+            }
+        }
+
+        function checkAchievements() {
+            const country = gameState.countries[gameState.selectedCountry];
+            
+            if (country.money >= 1000000) awardAchievement('rich_player');
+            if (country.technology >= 80) awardAchievement('tech_master');
+            if (country.population >= 100000000) awardAchievement('population_boom');
+            if (country.dailyIncome >= 10000) awardAchievement('economic_power');
+            if (userProfile.warsWon >= 10) awardAchievement('war_veteran');
+        }
+
+        // Avatar Management
+        function populateAvatarOptions() {
+            const container = document.getElementById('avatar-options');
+            container.innerHTML = avatars.map(avatar => `
+                <div class="avatar-option" onclick="selectAvatarOption('${avatar}')">
+                    ${avatar}
+                </div>
+            `).join('');
+        }
+
+        function showAvatarSelector() {
+            populateAvatarOptions();
+            document.getElementById('avatar-selector').classList.add('active');
+        }
+
+        function closeAvatarSelector() {
+            document.getElementById('avatar-selector').classList.remove('active');
+        }
+
+        function selectAvatarOption(avatar) {
+            selectedAvatar = avatar;
+            document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function selectAvatar() {
+            if (!selectedAvatar) {
+                showNotification('لطفاً آواتاری را انتخاب کنید!', 'error');
+                return;
+            }
+            
+            document.getElementById('avatar-display').textContent = selectedAvatar;
+            closeAvatarSelector();
+            showNotification('آواتار انتخاب شد!');
+        }
+
+        // Country Management
+        function populateCountriesList() {
+            const container = document.getElementById('countries-list');
+            const countriesArray = Object.entries(gameState.countries);
+            
+            container.innerHTML = countriesArray.map(([id, country]) => `
+                <div class="country-selection-card" onclick="selectCountry('${id}')">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <div class="text-3xl">${country.flag}</div>
+                        <div class="flex-1">
+                            <h3 class="text-base font-bold mb-1">${country.name}</h3>
+                            <p class="text-xs text-blue-300 mb-2">رئیس: ${country.president}</p>
+                            <div class="stats-grid text-xs">
+                                <div>💰 پول: ${formatNumber(country.money)}</div>
+                                <div>👥 جمعیت: ${formatNumber(country.population)}</div>
+                                <div>⚔️ ارتش: ${formatNumber(country.army)}</div>
+                                <div>💻 تکنولوژی: ${country.technology}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectCountry(countryId) {
+            if (userProfile.permanentCountry && userProfile.permanentCountry !== countryId) {
+                showNotification(`شما قبلاً ${gameState.countries[userProfile.permanentCountry].name} را انتخاب کرده‌اید و نمی‌توانید آن را تغییر دهید! 🔒`, 'error');
+                return;
+            }
+            
+            gameState.selectedCountry = countryId;
+            userProfile.gamesPlayed++;
+            userProfile.selectedCountry = countryId;
+            userProfile.permanentCountry = countryId;
+            
+            saveProfilePermanently();
+            showGameInterface();
+            showNotification(`به ${gameState.countries[countryId].name} خوش آمدید! این کشور تا ابد متعلق به شما خواهد بود! 🏴🔒`);
+            setTimeout(() => {
+                showNotification('📱 برای آپدیت‌ها و راهنمایی به کانال روبیکا بپیوندید: rubika.ir/worldpolitics');
+            }, 3000);
+        }
+
+        // Game UI Updates
+        function updateUI() {
+            const country = gameState.countries[gameState.selectedCountry];
+            
+            document.getElementById('country-flag').textContent = country.flag;
+            document.getElementById('country-name').textContent = country.name;
+            document.getElementById('president-name').textContent = country.president;
+            document.getElementById('money').textContent = formatNumber(country.money);
+            document.getElementById('population').textContent = formatNumber(country.population);
+            document.getElementById('army').textContent = formatNumber(country.army);
+            document.getElementById('technology').textContent = country.technology + '%';
+            document.getElementById('daily-income').textContent = formatNumber(country.dailyIncome);
+            document.getElementById('missiles').textContent = formatNumber(country.missiles);
+            document.getElementById('centrifuges').textContent = formatNumber(country.centrifuges);
+            document.getElementById('nuclear-program').textContent = country.nuclearProgram + '%';
+            document.getElementById('game-time').textContent = `روز ${gameState.day}`;
+            
+            updateWorldRanking();
+            updateAttackCountriesList();
+            checkAchievements();
+            
+            if (userProfile.username) {
+                saveProfilePermanently();
+            }
+        }
+
+        function updateHeaderProfile() {
+            if (userProfile.username) {
+                document.getElementById('header-avatar').textContent = userProfile.avatar;
+                document.getElementById('header-username').textContent = userProfile.username;
+                document.getElementById('user-level').textContent = userProfile.level;
+            }
+        }
+
+        function updateAttackCountriesList() {
+            if (!gameState.selectedCountry) return;
+            
+            const searchTerm = document.getElementById('attack-search')?.value?.toLowerCase() || '';
+            const myCountry = gameState.countries[gameState.selectedCountry];
+            
+            const attackTargets = Object.entries(gameState.countries)
+                .filter(([id, country]) => {
+                    if (id === gameState.selectedCountry) return false;
+                    if (searchTerm && !country.name.toLowerCase().includes(searchTerm)) return false;
+                    return true;
+                })
+                .map(([id, country]) => {
+                    const enemyPower = country.army + (country.technology * 10) + (country.missiles * 15);
+                    const myPower = myCountry.army + (myCountry.technology * 10) + (myCountry.missiles * 15);
+                    const winChance = Math.min(Math.max((myPower / (enemyPower + myPower)) * 100, 5), 95);
+                    
+                    let difficultyColor = 'bg-green-700';
+                    let difficultyText = 'آسان';
+                    
+                    if (winChance < 30) {
+                        difficultyColor = 'bg-red-700';
+                        difficultyText = 'خطرناک';
+                    } else if (winChance < 60) {
+                        difficultyColor = 'bg-yellow-700';
+                        difficultyText = 'متوسط';
+                    }
+                    
+                    return { id, country, winChance, difficultyColor, difficultyText };
+                })
+                .sort((a, b) => b.winChance - a.winChance);
+
+            const attackHTML = attackTargets.map(({ id, country, winChance, difficultyColor, difficultyText }) => `
+                <div class="p-3 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 transition-colors border-2 border-transparent attack-target" data-target="${id}">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <span class="text-lg">${country.flag}</span>
+                            <div>
+                                <div class="text-sm font-bold">${country.name}</div>
+                                <div class="text-xs text-gray-300">${country.president}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs ${difficultyColor} px-2 py-1 rounded text-white font-bold">
+                                ${difficultyText}
+                            </div>
+                            <div class="text-xs text-gray-300 mt-1">
+                                شانس پیروزی: ${Math.round(winChance)}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <div class="text-center">
+                            <div class="text-gray-400">ارتش</div>
+                            <div class="font-bold">${formatNumber(country.army)}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-gray-400">موشک</div>
+                            <div class="font-bold">${formatNumber(country.missiles)}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-gray-400">پول</div>
+                            <div class="font-bold">${formatNumber(country.money)}</div>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-center">
+                        <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded text-xs font-bold transition-colors" onclick="attackCountry('${id}')">
+                            ⚔️ حمله
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            const container = document.getElementById('attack-countries-list');
+            if (container) {
+                container.innerHTML = attackHTML || '<div class="text-gray-400 text-center text-sm">کشوری برای حمله یافت نشد</div>';
+            }
+        }
+
+        function updateWorldNewsDisplay() {
+            const newsContainer = document.getElementById('world-news');
+            if (newsContainer && gameState.worldNews.length > 0) {
+                newsContainer.innerHTML = gameState.worldNews.slice(-10).reverse().map(news => `
+                    <div class="p-2 bg-blue-800 rounded text-xs">${news}</div>
+                `).join('');
+            }
+        }
+
+        function addWorldNews(news) {
+            gameState.worldNews.push(news);
+            if (gameState.worldNews.length > 50) {
+                gameState.worldNews = gameState.worldNews.slice(-30);
+            }
+            updateWorldNewsDisplay();
+        }
+
+        function updateWorldRanking() {
+            const ranking = Object.entries(gameState.countries)
+                .map(([id, country]) => ({
+                    id,
+                    ...country,
+                    power: country.army + country.technology + (country.money / 1000) + (country.missiles * 10)
+                }))
+                .sort((a, b) => b.power - a.power);
+
+            const rankingHTML = ranking.slice(0, 10).map((country, index) => `
+                <div class="p-2 bg-gray-700 rounded text-xs ${country.id === gameState.selectedCountry ? 'border-2 border-yellow-400' : ''}">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <span class="font-bold">${index + 1}.</span>
+                            <span>${country.flag}</span>
+                            <span class="text-sm">${country.name}</span>
+                        </div>
+                        <span class="text-xs">${Math.round(country.power)}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('world-ranking').innerHTML = rankingHTML;
+            
+            const myRank = ranking.findIndex(c => c.id === gameState.selectedCountry) + 1;
+            document.getElementById('power-rank').textContent = `رتبه: ${myRank}`;
+        }
+
+        // Game Actions
+        function buildMine() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 5000) {
+                country.money -= 5000;
+                country.dailyIncome += 1000;
+                updateUI();
+                showNotification('معدن جدید ساخته شد!');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function buildFactory() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 3000) {
+                country.money -= 3000;
+                country.dailyIncome += 500;
+                updateUI();
+                showNotification('کارخانه جدید ساخته شد!');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function investTechnology() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 8000) {
+                country.money -= 8000;
+                country.technology += 5;
+                updateUI();
+                showNotification('تکنولوژی کشور ارتقا یافت!');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function improveWelfare() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 6000) {
+                country.money -= 6000;
+                country.population += 1000000;
+                updateUI();
+                showNotification('رفاه عمومی بهبود یافت!');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function recruitSoldiers() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 4000) {
+                country.money -= 4000;
+                country.army += 1000;
+                updateUI();
+                showNotification('سربازان جدید استخدام شدند!');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function buyTanks() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 7000) {
+                country.money -= 7000;
+                country.army += 500;
+                updateUI();
+                showNotification('تانک‌های جدید خریداری شد!');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function buyMissiles() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 10000) {
+                country.money -= 10000;
+                country.missiles += 5;
+                country.army += 50;
+                updateUI();
+                showNotification('موشک‌های جدید خریداری شد!');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function buildDefense() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 15000) {
+                country.money -= 15000;
+                country.army += 200;
+                country.technology += 3;
+                addXP(150);
+                updateUI();
+                showNotification('سیستم پدافندی ساخته شد!');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function buildCentrifuges() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 20000) {
+                country.money -= 20000;
+                country.centrifuges += 1;
+                country.technology += 2;
+                addXP(200);
+                updateUI();
+                showNotification('سانتریفیوژ جدید ساخته شد!');
+                
+                if (country.centrifuges >= 3) {
+                    showNotification('⚠️ تحریم‌های بین‌المللی اعمال شد!', 'error');
+                    country.dailyIncome = Math.max(country.dailyIncome - 1000, 500);
+                }
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function developNuclear() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 30000 && country.centrifuges >= 1) {
+                country.money -= 30000;
+                country.nuclearProgram += 5;
+                country.technology += 3;
+                addXP(300);
+                updateUI();
+                showNotification('برنامه هسته‌ای پیشرفت کرد!');
+                
+                if (country.nuclearProgram >= 50) {
+                    showNotification('⚠️ فشار بین‌المللی شدید!', 'error');
+                    country.dailyIncome = Math.max(country.dailyIncome - 2000, 300);
+                }
+            } else if (country.centrifuges < 1) {
+                showNotification('ابتدا سانتریفیوژ بسازید!', 'error');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function buyAdvancedMissiles() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 25000 && country.technology >= 60) {
+                country.money -= 25000;
+                country.missiles += 10;
+                country.army += 200;
+                addXP(250);
+                updateUI();
+                showNotification('موشک‌های پیشرفته خریداری شد!');
+            } else if (country.technology < 60) {
+                showNotification('تکنولوژی کافی ندارید! (حداقل ۶۰%)', 'error');
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function attackCountry(targetId) {
+            if (!gameState.selectedCountry || !targetId) {
+                showNotification('خطا در انتخاب کشور!', 'error');
+                return;
+            }
+
+            const myCountry = gameState.countries[gameState.selectedCountry];
+            const enemyCountry = gameState.countries[targetId];
+
+            if (myCountry.army < 100) {
+                showNotification('ارتش شما برای حمله کافی نیست! (حداقل ۱۰۰ نیرو)', 'error');
+                return;
+            }
+
+            const myPower = myCountry.army + (myCountry.technology * 10) + (myCountry.missiles * 15);
+            const enemyPower = enemyCountry.army + (enemyCountry.technology * 10) + (enemyCountry.missiles * 15);
+
+            userProfile.totalWars++;
+            
+            const randomFactor = 0.8 + (Math.random() * 0.4);
+            const adjustedMyPower = myPower * randomFactor;
+
+            if (adjustedMyPower > enemyPower) {
+                // Victory
+                const lootPercentage = 0.2 + (Math.random() * 0.2);
+                const loot = Math.floor(enemyCountry.money * lootPercentage);
+                const territoryGain = Math.floor(enemyCountry.population * 0.1);
+                const technologyGain = Math.floor(enemyCountry.technology * 0.05);
+                
+                const myArmyLoss = Math.floor(myCountry.army * (0.05 + Math.random() * 0.1));
+                const myMissileLoss = Math.floor(myCountry.missiles * 0.1);
+                
+                const enemyArmyLoss = Math.floor(enemyCountry.army * (0.3 + Math.random() * 0.2));
+                const enemyMissileLoss = Math.floor(enemyCountry.missiles * 0.2);
+                
+                myCountry.money += loot;
+                myCountry.population += territoryGain;
+                myCountry.technology += technologyGain;
+                myCountry.army -= myArmyLoss;
+                myCountry.missiles = Math.max(0, myCountry.missiles - myMissileLoss);
+                
+                enemyCountry.money = Math.max(1000, enemyCountry.money - loot);
+                enemyCountry.army = Math.max(100, enemyCountry.army - enemyArmyLoss);
+                enemyCountry.missiles = Math.max(0, enemyCountry.missiles - enemyMissileLoss);
+                enemyCountry.population = Math.max(1000000, enemyCountry.population - territoryGain);
+                
+                userProfile.warsWon++;
+                userProfile.totalMoney += loot;
+                addXP(300);
+                
+                if (userProfile.warsWon === 1) awardAchievement('first_war');
+                
+                showNotification(`🎉 پیروزی بر ${enemyCountry.name}! غنائم: ${formatNumber(loot)}$ + ${formatNumber(territoryGain)} نفر جمعیت + ${technologyGain}% تکنولوژی`);
+                addWorldNews(`🔥 ${myCountry.name} به ${enemyCountry.name} حمله کرد و پیروز شد!`);
+                
+            } else {
+                // Defeat
+                const lossPercentage = 0.15 + (Math.random() * 0.15);
+                const loss = Math.floor(myCountry.money * lossPercentage);
+                const populationLoss = Math.floor(myCountry.population * 0.05);
+                
+                const myArmyLoss = Math.floor(myCountry.army * (0.2 + Math.random() * 0.2));
+                const myMissileLoss = Math.floor(myCountry.missiles * 0.15);
+                
+                const enemyArmyLoss = Math.floor(enemyCountry.army * (0.05 + Math.random() * 0.1));
+                
+                myCountry.money = Math.max(1000, myCountry.money - loss);
+                myCountry.army = Math.max(50, myCountry.army - myArmyLoss);
+                myCountry.missiles = Math.max(0, myCountry.missiles - myMissileLoss);
+                myCountry.population = Math.max(1000000, myCountry.population - populationLoss);
+                
+                enemyCountry.army -= enemyArmyLoss;
+                
+                addXP(50);
+                
+                showNotification(`💥 شکست! ${enemyCountry.name} شما را شکست داد. ضررها: ${formatNumber(loss)}$ + ${formatNumber(populationLoss)} نفر + ${formatNumber(myArmyLoss)} سرباز`, 'error');
+                addWorldNews(`⚔️ ${enemyCountry.name} حمله ${myCountry.name} را دفع کرد!`);
+            }
+
+            saveProfilePermanently();
+            updateUI();
+        }
+
+        function spyMission() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country.money >= 5000) {
+                country.money -= 5000;
+                const success = Math.random() > 0.5;
+                
+                if (success) {
+                    const intel = Math.floor(Math.random() * 10000) + 5000;
+                    country.money += intel;
+                    showNotification(`ماموریت جاسوسی موفق! ${formatNumber(intel)}$ به دست آوردید!`);
+                } else {
+                    showNotification('ماموریت جاسوسی شکست خورد!', 'error');
+                }
+                updateUI();
+            } else {
+                showNotification('پول کافی ندارید!', 'error');
+            }
+        }
+
+        function showWarOptions() {
+            const enemies = Object.entries(gameState.countries)
+                .filter(([id]) => id !== gameState.selectedCountry)
+                .map(([id, country]) => `
+                    <div class="p-3 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 transition-colors" onclick="selectEnemy('${id}')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2 space-x-reverse">
+                                <span class="text-lg">${country.flag}</span>
+                                <span class="text-sm">${country.name}</span>
+                            </div>
+                            <div class="text-xs text-gray-300">
+                                <span>ارتش: ${formatNumber(country.army)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            document.getElementById('enemy-countries').innerHTML = enemies;
+            document.getElementById('war-modal').classList.add('active');
+        }
+
+        function selectEnemy(enemyId) {
+            gameState.selectedEnemy = enemyId;
+            document.querySelectorAll('#enemy-countries > div').forEach(el => el.classList.remove('bg-red-700'));
+            event.target.closest('div').classList.add('bg-red-700');
+        }
+
+        function startWar() {
+            if (!gameState.selectedEnemy) {
+                showNotification('ابتدا کشور مورد نظر را انتخاب کنید!', 'error');
+                return;
+            }
+
+            const myCountry = gameState.countries[gameState.selectedCountry];
+            const enemyCountry = gameState.countries[gameState.selectedEnemy];
+
+            if (myCountry.army < 100) {
+                showNotification('ارتش شما برای حمله کافی نیست!', 'error');
+                return;
+            }
+
+            const myPower = myCountry.army + (myCountry.technology * 10) + (myCountry.missiles * 15);
+            const enemyPower = enemyCountry.army + (enemyCountry.technology * 10) + (enemyCountry.missiles * 15);
+
+            const randomFactor = 0.8 + (Math.random() * 0.4);
+            const adjustedMyPower = myPower * randomFactor;
+
+            if (adjustedMyPower > enemyPower) {
+                // Victory
+                const loot = Math.floor(enemyCountry.money * 0.3);
+                const territoryGain = Math.floor(enemyCountry.population * 0.1);
+                
+                myCountry.money += loot;
+                myCountry.population += territoryGain;
+                myCountry.army -= Math.floor(myCountry.army * 0.1);
+                
+                enemyCountry.money = Math.max(1000, enemyCountry.money - loot);
+                enemyCountry.army = Math.max(100, enemyCountry.army * 0.7);
+                enemyCountry.population = Math.max(1000000, enemyCountry.population - territoryGain);
+                
+                showNotification(`🎉 پیروزی بر ${enemyCountry.name}! غنائم: ${formatNumber(loot)}$ + ${formatNumber(territoryGain)} نفر`);
+                
+            } else {
+                // Defeat
+                const loss = Math.floor(myCountry.money * 0.2);
+                myCountry.money = Math.max(1000, myCountry.money - loss);
+                myCountry.army = Math.max(50, myCountry.army * 0.8);
+                
+                showNotification(`💥 شکست! ${enemyCountry.name} شما را شکست داد. ضرر: ${formatNumber(loss)}$`, 'error');
+            }
+
+            closeWarModal();
+            updateUI();
+        }
+
+        function closeWarModal() {
+            document.getElementById('war-modal').classList.remove('active');
+            gameState.selectedEnemy = null;
+        }
+
+        // Tab Management
+        function switchTab(tabName) {
+            document.querySelectorAll('.mobile-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+        }
+
+        // Game Loop
+        function startGameLoop() {
+            setInterval(() => {
+                if (gameState.selectedCountry) {
+                    const country = gameState.countries[gameState.selectedCountry];
+                    country.money += Math.floor(country.dailyIncome / 24);
+                    updateUI();
+                }
+            }, 60000); // Every minute
+            
+            // Daily income
+            setInterval(() => {
+                if (gameState.selectedCountry) {
+                    gameState.day++;
+                    const country = gameState.countries[gameState.selectedCountry];
+                    country.money += country.dailyIncome;
+                    updateUI();
+                }
+            }, 300000); // Every 5 minutes = 1 day
+        }
+
+        // Admin Functions
+        function showAdminLogin() {
+            document.getElementById('admin-login-modal').classList.add('active');
+            document.getElementById('admin-password').value = '';
+        }
+
+        function closeAdminLogin() {
+            document.getElementById('admin-login-modal').classList.remove('active');
+        }
+
+        function checkAdminPassword() {
+            const password = document.getElementById('admin-password').value;
+            
+            if (adminPasswords.includes(password)) {
+                closeAdminLogin();
+                showAdminPanel();
+                showNotification('ورود به پنل مدیریت موفق!');
+            } else {
+                showNotification('رمز عبور اشتباه است!', 'error');
+            }
+        }
+
+        function showAdminPanel() {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (country) {
+                document.getElementById('admin-money').value = country.money;
+                document.getElementById('admin-population').value = country.population;
+                document.getElementById('admin-army').value = country.army;
+            }
+            
+            refreshPlayersList();
+            document.getElementById('admin-panel-modal').classList.add('active');
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('admin-panel-modal').classList.remove('active');
+        }
+
+        function refreshPlayersList() {
+            const allPlayers = getAllPlayers();
+            const playersContainer = document.getElementById('players-list');
+            const playersCount = document.getElementById('players-count');
+            
+            playersCount.textContent = `تعداد بازیکنان: ${allPlayers.length}`;
+            
+            playersContainer.innerHTML = allPlayers.map(player => `
+                <div class="bg-gray-700 rounded p-2 text-xs">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <span>${player.avatar}</span>
+                            <span class="font-bold">${player.username}</span>
+                        </div>
+                        <span class="text-purple-300">سطح ${player.level}</span>
+                    </div>
+                    <div class="text-gray-300">
+                        ${player.countryFlag} ${player.countryName} ${player.isPermanent ? '🔒' : ''}
+                    </div>
+                    <div class="text-gray-400 text-xs">
+                        آخرین فعالیت: ${new Date(player.lastActive).toLocaleString('fa-IR')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleAdminAction(action) {
+            const country = gameState.countries[gameState.selectedCountry];
+            if (!country) return;
+
+            switch (action) {
+                case 'setMoney':
+                    const money = parseInt(document.getElementById('admin-money').value) || 0;
+                    country.money = money;
+                    break;
+                case 'setPopulation':
+                    const population = parseInt(document.getElementById('admin-population').value) || 0;
+                    country.population = population;
+                    break;
+                case 'setArmy':
+                    const army = parseInt(document.getElementById('admin-army').value) || 0;
+                    country.army = army;
+                    break;
+                case 'maxAll':
+                    country.money = 999999999;
+                    country.population = 2000000000;
+                    country.army = 50000;
+                    country.technology = 100;
+                    country.missiles = 1000;
+                    country.centrifuges = 50;
+                    country.nuclearProgram = 100;
+                    country.dailyIncome = 100000;
+                    break;
+                case 'addMillion':
+                    country.money += 1000000;
+                    break;
+                case 'refreshPlayers':
+                    refreshPlayersList();
+                    return;
+            }
+
+            saveProfilePermanently();
+            updateUI();
+            showNotification('تغییرات اعمال شد!');
+        }
+
+        // User Panel Functions
+        function showUserPanel() {
+            document.getElementById('profile-avatar').textContent = userProfile.avatar;
+            document.getElementById('profile-username').textContent = userProfile.username;
+            document.getElementById('profile-level').textContent = userProfile.level;
+            document.getElementById('profile-xp').textContent = userProfile.xp;
+            
+            document.getElementById('games-played').textContent = userProfile.gamesPlayed;
+            document.getElementById('wars-won').textContent = userProfile.warsWon;
+            document.getElementById('total-money').textContent = formatNumber(userProfile.totalMoney);
+            document.getElementById('total-wars').textContent = userProfile.totalWars;
+            
+            document.getElementById('user-panel-modal').classList.add('active');
+        }
+
+        function closeUserPanel() {
+            document.getElementById('user-panel-modal').classList.remove('active');
+        }
+
+        function saveCurrentGame() {
+            showNotification('بازی ذخیره شد!');
+        }
+
+        function resetGame() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید بازی جدید شروع کنید؟ تمام پیشرفت فعلی از دست خواهد رفت!')) {
+                // Reset game state but keep profile
+                gameState.day = 1;
+                gameState.selectedCountry = null;
+                userProfile.permanentCountry = null;
+                userProfile.selectedCountry = null;
+                
+                saveProfilePermanently();
+                showCountrySelection();
+                showNotification('بازی جدید شروع شد!');
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user has existing profile
+            const hasProfile = loadProfilePermanently();
+            
+            if (hasProfile && userProfile.username) {
+                if (userProfile.permanentCountry) {
+                    gameState.selectedCountry = userProfile.permanentCountry;
+                    showGameInterface();
+                    showNotification(`🎉 خوش برگشتید ${userProfile.username}! شما رهبر ${gameState.countries[userProfile.permanentCountry].name} هستید! 👑`);
+                    startEnhancedAutoSave();
+                } else {
+                    showCountrySelection();
+                    showNotification(`🎉 پروفایل ${userProfile.username} بازیابی شد!`);
+                    startEnhancedAutoSave();
+                }
+            } else {
+                showMainHomepage();
+            }
+            
+            // Main homepage events
+            document.getElementById('start-game-btn').addEventListener('click', function() {
+                showDailyNews();
+            });
+            
+            document.getElementById('continue-to-game-btn').addEventListener('click', function() {
+                showProfileSetup();
+            });
+            
+            // Profile setup events
+            document.getElementById('create-profile-btn').addEventListener('click', createProfile);
+            document.getElementById('load-profile-btn').addEventListener('click', loadExistingProfile);
+            document.getElementById('change-avatar-btn').addEventListener('click', showAvatarSelector);
+            
+            // Avatar selector events
+            document.getElementById('select-avatar-btn').addEventListener('click', selectAvatar);
+            document.getElementById('cancel-avatar-btn').addEventListener('click', closeAvatarSelector);
+            
+            // Admin panel events
+            document.getElementById('admin-panel-btn').addEventListener('click', showAdminLogin);
+            document.getElementById('user-panel-btn').addEventListener('click', showUserPanel);
+            
+            // Enter key support
+            document.getElementById('username-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    createProfile();
+                }
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99ccf8ac930cdcc6',t:'MTc2Mjg1NTUyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
